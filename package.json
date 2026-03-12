@@ -2,6 +2,8 @@
   "name": "project_laba2",
   "version": "1.0.0",
   "description": "project",
+  "type": "module",
+  "module": "src/main.js",
   "main": "main.js",
   "dependencies": {
     "modules_laba2": "^0.0.1"
