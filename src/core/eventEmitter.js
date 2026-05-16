@@ -16,7 +16,11 @@ export class EventEmitter
         {
             this.events[eventName] = [];
         }
-        this.events[eventName].push(callback);
+
+        if(!this.events[eventName].includes(callback))
+        {
+            this.events[eventName].push(callback);
+        }
 
         return () => this.off(eventName, callback);
     }
@@ -58,11 +62,15 @@ export class EventEmitter
         }
     }
 
-    offAll(eventName)
+    offAll(eventName = null)
     {
         if(this.events[eventName])
         {
             delete this.events[eventName];
+        }
+        else if(eventName === null)
+        {
+            this.events = {};
         }
     }
 
