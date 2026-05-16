@@ -30,9 +30,8 @@ export function* simPrice(symbol, initPrice, options = {})
 
         yield ({
             symbol: symbol,
-            price: Number(currPrice.toFixed(2)),
+            price: Math.round(currPrice * 100) / 100,
             timestamp: Date.now()
         });
-
     }
 }
