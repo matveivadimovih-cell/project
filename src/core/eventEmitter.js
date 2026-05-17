@@ -64,13 +64,13 @@ export class EventEmitter
 
     offAll(eventName = null)
     {
-        if(this.events[eventName])
-        {
-            delete this.events[eventName];
-        }
-        else if(eventName === null)
+        if(eventName === null)
         {
             this.events = {};
+        }
+        else
+        {
+            delete this.events[eventName];
         }
     }
 
