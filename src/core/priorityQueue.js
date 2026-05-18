@@ -12,13 +12,12 @@ class PriorityQueue
         this.type = type;
         this.comparator = ("Bids" === type) 
             ? (a, b) => b.price - a.price
-            : (a, b) => a.price - b.price;
-        this.id = 0;
+            : (a, b) => a.price - b.price;;
     }
 
-    enqueue(price, amount)
+    enqueue(id, price, amount)
     {
-        const element  = { id: this.id++, price, amount, type: this.type };
+        const element  = { id, price, amount, type: this.type };
         let inserted = false;
         for(let i = 0; i < this.elements.length; i++)
         {
@@ -76,16 +75,19 @@ export class OrderBook
     {
         this.bids = new PriorityQueue("Bids");
         this.asks = new PriorityQueue("Asks");
+        this.idCounter = 0;
     }
 
     addBids(price, amount)
     {
-        this.bids.enqueue(price, amount);
+        const id = this.idCounter++;
+        this.bids.enqueue(id, price, amount);
     }
 
     addAsks(price, amount)
     {
-        this.asks.enqueue(price, amount);   
+        const id = this.idCounter++;
+        this.asks.enqueue(id, price, amount);
     }
 
     peekBestBid()
@@ -120,11 +122,11 @@ export class OrderBook
 
     getAllBids()
     {
-        return this.bids.elements;
+        return [...this.bids.elements];
     }
 
     getAllAsks()
     {
-        return this.asks.elements;
+        return [...this.asks.elements];
     }
 }
