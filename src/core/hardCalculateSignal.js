@@ -2,6 +2,7 @@ import { memo } from './memoize.js';
 
 function _hardCalculateSignal(currentPrice, initialPrice, volatility)
 {
+    console.log(`Calculating signal for price ${currentPrice} with initial price ${initialPrice} and volatility ${volatility}`);
     const changePercent = ((currentPrice - initialPrice) / initialPrice) * 100;
 
     let signal = 'HOLD';

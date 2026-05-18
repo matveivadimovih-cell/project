@@ -161,7 +161,8 @@ class Market
         this._tryMatchOrder(tickResults.symbol);
 
         const stockInfo = this.allStocks.get(tickResults.symbol);
-        const signalData = hardCalculateSignal(tickResults.price, stockInfo.price, stockInfo.options.volatility || 0.05);
+        const priceForSignal = Math.round(tickResults.price * 5) / 5;
+        const signalData = hardCalculateSignal(priceForSignal, stockInfo.price, stockInfo.options.volatility || 0.05);
 
         const tickresultsWithSignal = { ...tickResults, ...signalData };
 
