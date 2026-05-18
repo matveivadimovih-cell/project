@@ -1,5 +1,6 @@
 import { EventEmitter } from "../core/eventEmitter.js";
 import { simPrice } from "../core/generator.js";
+import { hardCalculateSignal } from "../core/hardCalculateSignal.js";
 import { OrderBook } from "../core/priorityQueue.js";
 
 class Market
@@ -157,10 +158,15 @@ class Market
     _updatePrice(tickResults)
     {
         this.currentPrices.set(tickResults.symbol, tickResults.price);
-
         this._tryMatchOrder(tickResults.symbol);
-        this.emitter.emit("priceUpdate", tickResults);
-        this.emitter.emit(`priceUpdate:${tickResults.symbol}`, tickResults);
+
+        const stockInfo = this.allStocks.get(tickResults.symbol);
+        const signalData = hardCalculateSignal(tickResults.price, stockInfo.price, stockInfo.options.volatility || 0.05);
+
+        const tickresultsWithSignal = { ...tickResults, ...signalData };
+
+        this.emitter.emit("priceUpdate", tickresultsWithSignal);
+        this.emitter.emit(`priceUpdate:${tickResults.symbol}`, tickresultsWithSignal);
     }
 
     stop()
