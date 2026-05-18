@@ -12,7 +12,7 @@ class PriorityQueue
         this.type = type;
         this.comparator = ("Bids" === type) 
             ? (a, b) => b.price - a.price
-            : (a, b) => a.price - b.price;;
+            : (a, b) => a.price - b.price;
     }
 
     enqueue(id, price, amount)
