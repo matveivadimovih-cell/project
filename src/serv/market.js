@@ -89,7 +89,7 @@ class Market
 
         this._tryMatchOrder(symbol);
 
-        return orderBook.idCounter - 1;
+        return orderId;
     }
 
     removeStock(symbol)
