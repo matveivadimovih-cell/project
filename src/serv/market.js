@@ -1,5 +1,6 @@
 import { EventEmitter } from "../core/eventEmitter.js";
 import { simPrice } from "../core/generator.js";
+import { OrderBook } from "../core/priorityQueue.js";
 
 class Market
 {
@@ -10,6 +11,7 @@ class Market
         this.intervals = new Map();
         this.tickInterval = 1000;
         this.allStocks = new Map();
+        this.orderBooks = new Map();
     }
 
     start(tickInterval = 1000)
@@ -38,6 +40,8 @@ class Market
 
         this.allStocks.set(symbol, { symbol, price: initPrice, options });
 
+        this.orderBooks.set(symbol, new OrderBook());
+
         const generator = simPrice(symbol, initPrice, options);
 
         const firstTick = generator.next().value;
@@ -62,9 +66,11 @@ class Market
         }
 
         clearInterval(this.intervals.get(symbol));
+
         this.intervals.delete(symbol);
         this.currentPrices.delete(symbol);
         this.allStocks.delete(symbol);
+        this.orderBooks.delete(symbol);
 
         this.emitter.emit("stockRemoved", symbol);
     }

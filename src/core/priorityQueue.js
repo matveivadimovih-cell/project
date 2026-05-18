@@ -1,4 +1,4 @@
-export class PriorityQueue
+class PriorityQueue
 {
     constructor(type = "Bids")
     {
@@ -67,5 +67,64 @@ export class PriorityQueue
     size()
     {
         return this.elements.length;
+    }
+}
+
+export class OrderBook
+{    
+    constructor()
+    {
+        this.bids = new PriorityQueue("Bids");
+        this.asks = new PriorityQueue("Asks");
+    }
+
+    addBids(price, amount)
+    {
+        this.bids.enqueue(price, amount);
+    }
+
+    addAsks(price, amount)
+    {
+        this.asks.enqueue(price, amount);   
+    }
+
+    peekBestBid()
+    {
+        return this.bids.peek();
+    }
+
+    peekBestAsk()
+    {
+        return this.asks.peek();
+    }
+
+    extractBestBid()
+    {
+        return this.bids.dequeue();
+    }   
+
+    extractBestAsk()
+    {
+        return this.asks.dequeue();
+    }
+
+    cancelOrder(id)
+    {
+        if(this.bids.cancel(id) || this.asks.cancel(id))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    getAllBids()
+    {
+        return this.bids.elements;
+    }
+
+    getAllAsks()
+    {
+        return this.asks.elements;
     }
 }
