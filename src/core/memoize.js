@@ -1,7 +1,7 @@
 const argKey = (x) => String(x)+':'+typeof x;
 const generateKey = (args) => args.map(argKey).join('|');
 
-function memo(fn, maxSize = Infinity, evict = null)
+export function memo(fn, maxSize = Infinity, evict = null)
 {
     const cache = new Map();
 

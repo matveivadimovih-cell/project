@@ -17,6 +17,12 @@ class Market
 
     start(tickInterval = 1000)
     {
+        if(this.intervals.size > 0)
+        {
+            console.warn("Market is already running");
+            return;
+        }
+        
         this.tickInterval = tickInterval;
 
         if(this.allStocks.size === 0)
