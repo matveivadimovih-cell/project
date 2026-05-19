@@ -134,9 +134,35 @@ export class ApiService
         return {success: true, message: `${orderType} executed`};
     }
 
-    async placeLimitOrder()
+    async placeLimitOrder(symbol, price, amount, orderType)
     {
-        
+        await delay(300);
+
+        const totalCost = amount * price;
+
+        if(orderType === "buy")
+        {
+            if(this.userBalance < totalCost) throw new Error("you don't have money");
+            this.userBalance -= totalCost;
+        }
+        else if(orderType == "sell")
+        {
+            const ownedAmount = this.userPortfolio.get(symbol) || 0;
+            if(ownedAmount < amount) throw new Error("you don't such amount");
+
+            if(this.userPortfolio.get(symbol) === amount) 
+            {
+                this.userPortfolio.delete(symbol);
+            }
+            else 
+            {
+                this.userPortfolio.set(symbol, ownedAmount - amount);
+            }
+        }
+
+        const orderId = market.addOrder(symbol, price, amount, orderType);
+        this.activeOrders.set(orderId, { symbol, price, amount, orderType });
+        return {success: true, orderId};
     }
 
     async cancelLimitOrder()
