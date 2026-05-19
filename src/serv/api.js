@@ -58,8 +58,7 @@ export class ApiService
             this.tokenTimeTo = Date.now() + 5 * 60 * 1000;
             return {success: true, token: this.authToken};
         }
-        logWarn("Invalid username or password");
-        return;
+        throw new Error("Invalid username or password")
         
     }
 
@@ -108,32 +107,19 @@ export class ApiService
         await delay(300);
 
         const currentPrice = market.getPrice(symbol);
-        if(!currentPrice)
-        {
-            logWarn(`${symbol} not found`);
-            return;
-        }
+        if(!currentPrice) throw new Error(`${symbol} not found`);
 
         const totalCost = amount * currentPrice;
         if(orderType === "buy")
         {
-            if(this.userBalance < totalCost)
-            {
-                logWarn("you don't have money");
-                return;
-            }
-            
+            if(this.userBalance < totalCost) throw new Error("you don't have money");
             this.userBalance -= totalCost;
             this.userPortfolio.set(symbol, (this.userPortfolio.get(symbol) || 0) + amount);
         }
         else if(orderType === "sell")
         {
             const ownedAmount = this.userPortfolio.get(symbol) || 0;
-            if(ownedAmount < amount)
-            {
-                logWarn("you don't such amount");
-                return;
-            }
+            if(ownedAmount < amount) throw new Error("you don't such amount");
 
             this.userBalance += totalCost;
             if(this.userPortfolio.get(symbol) === amount) 
@@ -158,21 +144,13 @@ export class ApiService
 
         if(orderType === "buy")
         {
-            if(this.userBalance < totalCost)
-            {
-                logWarn("you don't have money");
-                return;
-            }
+            if(this.userBalance < totalCost) throw new Error("you don't have money");
             this.userBalance -= totalCost;
         }
         else if(orderType == "sell")
         {
             const ownedAmount = this.userPortfolio.get(symbol) || 0;
-            if(ownedAmount < amount)
-            {
-                logWarn("you don't such amount");
-                return;
-            }
+            if(ownedAmount < amount) throw new Error("you don't such amount");
 
             if(this.userPortfolio.get(symbol) === amount) 
             {
@@ -194,17 +172,12 @@ export class ApiService
         await delay(150);
 
         const myOrder = this.activeOrders.get(orderId);
-        if(!myOrder)
-        {
-            logWarn("Order not found in myOrder")
-            return;
-        }
+        if(!myOrder) throw new Error("Order not found in myOrder");
 
         const success = market.removeOrder(symbol, orderId);
         if(!success)
         {
-            logWarn("Order not found in market");
-            return;
+            throw new Error("Order not found in market")
         }
 
         const totalCost = myOrder.price * myOrder.amount;
@@ -237,4 +210,4 @@ ApiService.prototype.getMarketPrice = logging('DEBUG')(ApiService.prototype.getM
 ApiService.prototype.getAllMarketPrices = logging('DEBUG')(ApiService.prototype.getAllMarketPrices);
 ApiService.prototype.getPortfolio = logging('DEBUG')(ApiService.prototype.getPortfolio);
 ApiService.prototype.getPortfolioSync = logging('DEBUG')(ApiService.prototype.getPortfolioSync);
-ApiService.prototype._handleOrderExecuted = logging('DEBUG')(ApiService.prototype._handleOrderExecuted);
+ApiService.prototype._handleOrderExecuted = logging('DEBUG')(ApiService.prototype._handleOrderExecuted); 
