@@ -67,9 +67,12 @@ export function Logging(logLevel = 'INFO')
             {
                 const result = await fn(...args);
                 const timeTaken = Date.now() - starttime;
-                const successMessage = `[${timestamp}] [${logLevel}] [${fn.name}] Success in ${timeTaken}ms and called with args: ${args.map(stringifyArg).join(', ')}`;
 
-                emitAndAddLog({ timestamp, logLevel, functionName: fn.name, timeTaken, result, message: successMessage });
+                if(logLevel != 'ERROR')
+                {
+                    const successMessage = `[${timestamp}] [${logLevel}] [${fn.name}] Success in ${timeTaken}ms and called with args: ${args.map(stringifyArg).join(', ')}`;
+                    emitAndAddLog({ timestamp, logLevel, functionName: fn.name, timeTaken, result, message: successMessage });
+                }
 
                 return result;
             }
@@ -85,5 +88,4 @@ export function Logging(logLevel = 'INFO')
             }
         }
     }
-
 }
