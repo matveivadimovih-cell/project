@@ -28,8 +28,8 @@ class Market
         if(this.allStocks.size === 0)
         {
             this.addStock("AAA", 150, { volatility: 0.05 });
-            this.addStock("BBB", 2800, { volatility: 0.07 });
-            this.addStock("CCC", 3400, { volatility: 0.01 });
+            this.addStock("BBB", 2800, { volatility: 0.01 });
+            this.addStock("CCC", 3400, { volatility: 0.001 });
         }
         else
         {
