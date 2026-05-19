@@ -1,3 +1,5 @@
+import { EventEmitter } from "./eventEmitter.js"
+
 const LOG_LEVELS = {
     DEBUG: 0,
     INFO: 1,
@@ -8,6 +10,20 @@ const LOG_LEVELS = {
 let assignedLogLevel = LOG_LEVELS.INFO;
 let logStorage = [];
 const MAX_LOG_STORAGE = 1000;
+
+export const loggerEmitter = new EventEmitter();
+
+function emitAndAddLog(logEntry)
+{
+    if (logStorage.length > MAX_LOG_STORAGE)
+    {
+        logStorage.shift();
+    }
+
+    logStorage.push(logEntry);
+
+    loggerEmitter.emit('logAdded', logEntry);
+}
 
 export function setLogLevel(level)
 {
@@ -53,12 +69,7 @@ export function Logging(logLevel = 'INFO')
                 const timeTaken = Date.now() - starttime;
                 const successMessage = `[${timestamp}] [${logLevel}] [${fn.name}] Success in ${timeTaken}ms and called with args: ${args.map(stringifyArg).join(', ')}`;
 
-                logStorage.push({ timestamp, logLevel, functionName: fn.name, timeTaken, result, message: successMessage });
-
-                if (logStorage.length > MAX_LOG_STORAGE)
-                {
-                    logStorage.shift();
-                }
+                emitAndAddLog({ timestamp, logLevel, functionName: fn.name, timeTaken, result, message: successMessage });
 
                 return result;
             }
@@ -67,11 +78,7 @@ export function Logging(logLevel = 'INFO')
                 const timeTaken = Date.now() - starttime;
                 const errorMessage = `[${timestamp}] [${logLevel}] [${fn.name}] Failed in ${timeTaken}ms with error: ${error.message}`;
 
-                logStorage.push({ timestamp, logLevel, functionName: fn.name, timeTaken, result: null, message: errorMessage });
-                if (logStorage.length > MAX_LOG_STORAGE)
-                {
-                    logStorage.shift();
-                }
+                emitAndAddLog({ timestamp, logLevel, functionName: fn.name, timeTaken, result: null, message: errorMessage });
 
                 console.error(errorMessage);
                 throw error;
