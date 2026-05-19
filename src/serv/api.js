@@ -41,7 +41,7 @@ export class ApiService
         return (this.authToken != null && Date.now() < this.tokenTimeTo);
     }
 
-    async getMarketPrice(symbol) 
+    async getMarketPrice(symbol)
     {
         await delay(50);
 
@@ -54,4 +54,6 @@ export class ApiService
 
         return market.getAllPrices();
     }
+
+
 }
