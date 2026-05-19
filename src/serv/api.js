@@ -11,6 +11,8 @@ export class ApiService
         this.authToken = null;
         this.tokenTimeTo = null;
 
+        this.activeOrders = new Map();
+
         this._subscribeMarketEvents()
     }
 
@@ -21,7 +23,7 @@ export class ApiService
         if(username === "user" && password === "123")
         {
             this.authToken = `token_${Date.now()}`
-            this.tokemTimeTo = Date.now() + 5 * 60 * 1000;
+            this.tokenTimeTo = Date.now() + 5 * 60 * 1000;
             return {success: true, token: this.authToken};
         }
         throw new Error("Invalid username or password")
@@ -39,13 +41,17 @@ export class ApiService
         return (this.authToken != null && Date.now() < this.tokenTimeTo);
     }
 
-    async getStockPrice(symbol) 
+    async getMarketPrice(symbol) 
     {
+        await delay(50);
 
+        return market.getPrice(symbol);
     }
 
-    async getAllPrices() 
+    async getAllMarketPrices() 
     {
+        await delay(50);
 
+        return market.getAllPrices();
     }
 }
