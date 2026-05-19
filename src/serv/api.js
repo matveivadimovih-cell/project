@@ -1,4 +1,5 @@
 import { market } from "./market.js"
+import { logging, logWarn } from "../core/decorators.js"
 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -57,7 +58,9 @@ export class ApiService
             this.tokenTimeTo = Date.now() + 5 * 60 * 1000;
             return {success: true, token: this.authToken};
         }
-        throw new Error("Invalid username or password")
+        logWarn("Invalid username or password");
+        return;
+        
     }
 
     async logout()
@@ -105,19 +108,32 @@ export class ApiService
         await delay(300);
 
         const currentPrice = market.getPrice(symbol);
-        if(!currentPrice) throw new Error(`${symbol} not found`);
+        if(!currentPrice)
+        {
+            logWarn(`${symbol} not found`);
+            return;
+        }
 
         const totalCost = amount * currentPrice;
         if(orderType === "buy")
         {
-            if(this.userBalance < totalCost) throw new Error("you don't have money");
+            if(this.userBalance < totalCost)
+            {
+                logWarn("you don't have money");
+                return;
+            }
+            
             this.userBalance -= totalCost;
             this.userPortfolio.set(symbol, (this.userPortfolio.get(symbol) || 0) + amount);
         }
         else if(orderType === "sell")
         {
             const ownedAmount = this.userPortfolio.get(symbol) || 0;
-            if(ownedAmount < amount) throw new Error("you don't such amount");
+            if(ownedAmount < amount)
+            {
+                logWarn("you don't such amount");
+                return;
+            }
 
             this.userBalance += totalCost;
             if(this.userPortfolio.get(symbol) === amount) 
@@ -142,13 +158,21 @@ export class ApiService
 
         if(orderType === "buy")
         {
-            if(this.userBalance < totalCost) throw new Error("you don't have money");
+            if(this.userBalance < totalCost)
+            {
+                logWarn("you don't have money");
+                return;
+            }
             this.userBalance -= totalCost;
         }
         else if(orderType == "sell")
         {
             const ownedAmount = this.userPortfolio.get(symbol) || 0;
-            if(ownedAmount < amount) throw new Error("you don't such amount");
+            if(ownedAmount < amount)
+            {
+                logWarn("you don't such amount");
+                return;
+            }
 
             if(this.userPortfolio.get(symbol) === amount) 
             {
@@ -165,9 +189,52 @@ export class ApiService
         return {success: true, orderId};
     }
 
-    async cancelLimitOrder()
+    async cancelLimitOrder(symbol, orderId)
     {
+        await delay(150);
 
+        const myOrder = this.activeOrders.get(orderId);
+        if(!myOrder)
+        {
+            logWarn("Order not found in myOrder")
+            return;
+        }
+
+        const success = market.removeOrder(symbol, orderId);
+        if(!success)
+        {
+            logWarn("Order not found in market");
+            return;
+        }
+
+        const totalCost = myOrder.price * myOrder.amount;
+        if(myOrder.orderType === "buy")
+        {
+            this.userBalance += totalCost;
+        }
+        else if(myOrder.orderType === "sell")
+        {
+            const currentAmount = this.userPortfolio.get(symbol) || 0;
+            this.userPortfolio.set(symbol, myOrder.amount + currentAmount);
+        }
+
+        this.activeOrders.delete(orderId);
+
+        market.emitter.emit("portfolioUpdated", this.getPortfolioSync());
+
+        return {success: true, message: `Order ${orderId} cancelled`}
     }
-
 }
+
+ApiService.prototype.login = logging('INFO')(ApiService.prototype.login);
+ApiService.prototype.logout = logging('INFO')(ApiService.prototype.logout);
+ApiService.prototype.executeMarketOrder = logging('INFO')(ApiService.prototype.executeMarketOrder);
+ApiService.prototype.placeLimitOrder = logging('INFO')(ApiService.prototype.placeLimitOrder);
+ApiService.prototype.cancelLimitOrder = logging('INFO')(ApiService.prototype.cancelLimitOrder);
+
+ApiService.prototype.isAuthorized = logging('DEBUG')(ApiService.prototype.isAuthorized);
+ApiService.prototype.getMarketPrice = logging('DEBUG')(ApiService.prototype.getMarketPrice);
+ApiService.prototype.getAllMarketPrices = logging('DEBUG')(ApiService.prototype.getAllMarketPrices);
+ApiService.prototype.getPortfolio = logging('DEBUG')(ApiService.prototype.getPortfolio);
+ApiService.prototype.getPortfolioSync = logging('DEBUG')(ApiService.prototype.getPortfolioSync);
+ApiService.prototype._handleOrderExecuted = logging('DEBUG')(ApiService.prototype._handleOrderExecuted);
