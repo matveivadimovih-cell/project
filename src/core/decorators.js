@@ -52,11 +52,11 @@ export function Logging(logLevel = 'INFO')
     const currentLogLevel = LOG_LEVELS[logLevel] || LOG_LEVELS.INFO;
     return function(fn)
     {
-        return async function(...args)
+        return function(...args)
         {
             if(currentLogLevel < assignedLogLevel)
             {
-                const result = await fn(...args);
+                const result = fn.apply(this, args);
                 return result;
             }
 
@@ -65,16 +65,42 @@ export function Logging(logLevel = 'INFO')
             
             try
             {
-                const result = await fn(...args);
-                const timeTaken = Date.now() - starttime;
-
-                if(logLevel != 'ERROR')
+                const result = fn.apply(this, args);
+                if(result instanceof Promise)
                 {
-                    const successMessage = `[${timestamp}] [${logLevel}] [${fn.name}] Success in ${timeTaken}ms and called with args: ${args.map(stringifyArg).join(', ')}`;
-                    emitAndAddLog({ timestamp, logLevel, functionName: fn.name, timeTaken, result, message: successMessage });
-                }
+                    result.then(asyncResult => {
+                        const timeTaken = Date.now() - starttime;
 
-                return result;
+                        if(logLevel != 'ERROR')
+                        {
+                            const successMessage = `[${timestamp}] [${logLevel}] [${fn.name}] Success in ${timeTaken}ms and called with args: ${args.map(stringifyArg).join(', ')}`;
+                            emitAndAddLog({ timestamp, logLevel, functionName: fn.name, timeTaken, result: asyncResult, message: successMessage });
+                        }
+
+                        return asyncResult;
+                    })
+                    .catch(error => {
+                        const timeTaken = Date.now() - starttime;
+                        const errorMessage = `[${timestamp}] [${logLevel}] [${fn.name}] Failed in ${timeTaken}ms with error: ${error.message}`;
+
+                        emitAndAddLog({ timestamp, logLevel, functionName: fn.name, timeTaken, result: null, message: errorMessage });
+
+                        console.error(errorMessage);
+                        throw error;
+                    });
+                }
+                else
+                {
+                    const timeTaken = Date.now() - starttime;
+
+                    if(logLevel != 'ERROR')
+                    {
+                        const successMessage = `[${timestamp}] [${logLevel}] [${fn.name}] Success in ${timeTaken}ms and called with args: ${args.map(stringifyArg).join(', ')}`;
+                        emitAndAddLog({ timestamp, logLevel, functionName: fn.name, timeTaken, result, message: successMessage });
+                    }
+
+                    return result;
+                }
             }
             catch(error)
             {
